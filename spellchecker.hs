@@ -1,7 +1,8 @@
 import System.IO
 import Data.List.Split
 import Control.Applicative
-import Data.Char
+import Data.Char 
+
 import qualified Data.Set as Set
 import qualified Data.Map as Map
 import qualified Data.List as List
@@ -9,14 +10,32 @@ import qualified Data.List as List
 type Hist = Map.Map String Int 
 
 main = do 
-        trainFromFile "big.txt" >>= print
-        putStrLn "done."
+        putStrLn "Weclome"
+        putStrLn ""
+        hist <- trainFromFile "big.txt"
+        correctAndLoop hist
+        putStrLn ""
+        putStrLn "Done."
+
+
+correctAndLoop :: Hist -> IO ()
+correctAndLoop hist = do 
+                        putStrLn "input: "
+                        word <- getLine
+                        case word of "exit" -> return ()
+                                     word -> let correction = correct word hist
+                                              in do putStrLn correction
+                                                    correctAndLoop hist
+ 
 
 
 trainFromFile :: String -> IO Hist
 trainFromFile fileName = do
                             words <- separateWords <$> readFile "big.txt"
                             return $ train words
+
+train :: [String] -> Hist
+train features = Map.fromList [ (x, count x features) | x <- features] 
                             
 
 correct :: String -> Hist -> String 
@@ -24,12 +43,16 @@ correct word hist =
     let candidates = [ known [word] hist ] ++ 
                      [ known (Set.toList $ edits1 word ) hist ] ++ 
                      [ known_edits2 word hist ]
-        candidateList = case List.find (\x -> Set.size x > 0) candidates of Just x -> Set.toList x
+        candidateList = case List.find (\x -> Set.size x > 0) candidates of Just s -> (Set.toList s)
                                                                             Nothing -> [""]
-    in case List.maximum $ map (\k -> Map.lookup k hist) candidateList of Just x -> x
-                                                                          Nothing -> word   
+    in case ( maxValueForKey candidateList hist ) of Just x -> x
+                                                     Nothing -> word
 
-
+maxValueForKey :: [String] -> Hist -> Maybe String
+maxValueForKey [] _ = Nothing
+maxValueForKey keys hist = let tuples = map (\k -> (k, Map.lookup k hist) ) keys 
+                               (mk,mv) = foldl (\(mk,mv) (k,v) -> if v > mv then (k,v) else (mk,mv)) ("",Nothing) tuples
+                           in Just mk
 
 known :: [String] -> Hist -> Set.Set String 
 known words hist = Set.fromList [w | w <- words, Map.member w hist]
@@ -38,9 +61,6 @@ known_edits2 :: String -> Hist -> Set.Set String
 known_edits2 word hist = Set.fromList [e2 | e1 <- Set.toList $ edits1 word, 
                                             e2 <- Set.toList $ edits1 e1, 
                                             Map.member e2 hist ]
-
-train :: [String] -> Hist
-train features = Map.fromList [ (x, count x features) | x <- features] 
 
 
 count :: String -> [String] -> Int
@@ -72,13 +92,5 @@ isAllChar (x:xs)
           z = ord 'z'
           capA = ord 'A'
           capZ = ord 'Z'
-
-
-
--- don't erase
--- main = do 
---           words <- separateWords <$> readFile "big.txt"
---           print words
-
 
 
