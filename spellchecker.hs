@@ -20,11 +20,12 @@ main = do
 
 correctAndLoop :: Hist -> IO ()
 correctAndLoop hist = do 
-                        putStrLn "input: "
+                        putStr "input: "
                         word <- getLine
+                        putStrLn ""
                         case word of "exit" -> return ()
                                      word -> let correction = correct word hist
-                                              in do putStrLn correction
+                                              in do putStrLn $ "did you mean " ++ correction ++ "?"
                                                     correctAndLoop hist
  
 
