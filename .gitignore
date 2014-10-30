@@ -1,3 +1,5 @@
 *~
 *.hi
 *.o
+barcode-reader/barcode-reader
+spellcheck/spellchecker
