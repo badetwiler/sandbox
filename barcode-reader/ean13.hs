@@ -19,18 +19,16 @@ main = do
          print checksum
 
 
-
-
-encode  digits 
-  | length digits /= 12 = Nothing
-  | otherwise = 
+encode digits = 
     let checksum = 10 - ( (sum $ zipWith ($) (cycle [id, (*3)] ) digits ) `mod` 10 )
         firstEncoding = ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", 
                          "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL" ]
-        encoding = ( firstEncoding !! (head digits ) ) ++ "RRRRRR"
-    in Just ( foldl (\acc (code,val) -> acc ++ (mapCode code val) ) 
-                    "" 
-                    (zip encoding ((tail digits)++[checksum])) )
+        encodePartial encoding digits =  foldl (\acc (code,val) -> acc ++ (mapCode code val) ) 
+                                         "" 
+                                         (zip encoding digits)        
+        firstGroup = encodePartial (firstEncoding !! (head digits))  (take 6 (drop 1 digits))
+        secondGroup = encodePartial "RRRRRR" (take 6 (drop 7 (digits ++ [checksum])))
+        in "101" ++ firstGroup ++ "01010" ++ secondGroup ++ "101" 
 
 
 mapCode char n 
