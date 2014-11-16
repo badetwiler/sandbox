@@ -1,5 +1,5 @@
 module PGM  
-( PGM,
+( PGM(..),
   parse,
   PGM.readFile,
   PGM.writeFile,
